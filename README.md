@@ -15,7 +15,7 @@ You can install the package via composer:
 ```bash
 composer require magedahmad/larapayment
 ```
-under `providers` in `config/app/php` add this line
+After installing, register the service provider inside config/app.php
 ```php
 MagedAhmad\LaraPayment\LaraPaymentServiceProvider::class,
 ```
