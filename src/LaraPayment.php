@@ -24,20 +24,24 @@ class LaraPayment
     /**
      * Initiate payment helper class
      *
-     * @param [type] $method
-     * @param [type] $amount
-     * @param [type] $token
-     * @param [type] $currency
+     * @param string $currency
      */
-	public function __construct($token=null,$currency=null)
+	public function __construct($currency=null)
 	{ 
         $this->request = new Client();
 
         $this->currency=(null==$currency)?"USD":$currency; 
         
-        $this->PAYMOB_API_KEY=env('PAYMOB_API_KEY');
-	}
-
+        $this->PAYMOB_API_KEY= config('larapayment.paymob_api_key');
+    }
+    
+    /**
+     * Undocumented function
+     *
+     * @param string $method
+     * @param integer $amount
+     * @return void
+     */
 	public function make_payment($method, $amount){ 
         $this->method=$method;
         $this->amount=$this->clac_new_amount($method,$amount);
@@ -80,7 +84,7 @@ class LaraPayment
         
         return [
             'status'=>200,
-            'redirect'=>"https://accept.paymobsolutions.com/api/acceptance/iframes/".env("PAYMOB_IFRAME_ID")."?payment_token=" . $paymentToken,
+            'redirect'=>"https://accept.paymobsolutions.com/api/acceptance/iframes/".config("larapayment.paymob_iframe_id")."?payment_token=" . $paymentToken,
         ]; ;
     }  
 
@@ -119,7 +123,7 @@ class LaraPayment
                     "state"=> "NA" 
                 ],
                 "currency"=>"EGP",
-                "integration_id"=> env('PAYMOB_MOOD') == "live" ? env('PAYMOB_LIVE_INTEGRATION_ID') : env('PAYMOB_SANDBOX_INTEGRATION_ID') 
+                "integration_id"=> config('larapayment.paymob_mood') == "live" ? config('larapayment.paymob_live_integration_id') : config('larapayment.paymob_sandbox_integration_id') 
             ]
         ]);
 
@@ -215,23 +219,15 @@ class LaraPayment
     }
 
     public function clac_new_amount($method,$amount){
-        if($method=='paypal'){
-            return floatval($amount+($amount*env('PAYPAL_PERCENTAGE_FEE'))+env('PAYPAL_FIXED_FEE'));
-        } if($method=='paymob'){
-            return floatval($amount+($amount*env('PAYMOB_PERCENTAGE_FEE'))+env('PAYMOB_FIXED_FEE'));
-        } else if($method=='tap'){
-            return floatval($amount+($amount*env('TAP_PERCENTAGE_FEE'))+env('TAP_FIXED_FEE'));
+        if($method=='paymob'){
+            return floatval($amount+($amount*config('larapayment.paymob_percentage_fee'))+config('larapayment.paymob_fixed_fee'));
         }
     }
     
     public static function calc_amout_after_transaction($method,$amount){
-        if($method=='paypal'){
-            return floatval( ($amount-env('PAYPAL_FIXED_FEE'))/(1+env('PAYPAL_PERCENTAGE_FEE')) );
-        }else if($method=='paymob'){
-            return floatval( ($amount-env('PAYMOB_FIXED_FEE'))/(1+env('PAYMOB_PERCENTAGE_FEE')) );
-        }else if($method=='tap'){
-            return floatval( ($amount-env('TAP_FIXED_FEE'))/(1+env('TAP_PERCENTAGE_FEE')) );
-        } 
+        if($method=='paymob'){
+            return floatval( ($amount-config('larapayment.paymob_fixed_fee'))/(1+config('larapayment.paymob_percentage_fee')) );
+        }
     }
 
     /**

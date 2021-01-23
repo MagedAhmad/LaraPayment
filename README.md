@@ -41,15 +41,16 @@ $payment = new LaraPayment();
 
 // payment gateway = paymob
 // amount to pay in usd = 100$
-return $payment->make_payment("paymob", 100);
+$payment->make_payment("paymob", 100);
 ```
 
 Response would return the `iframe` that you need to include in your blade file 
 
 after completing transaction you would be redirected to a route you specify in [paymob itself](https://docs.paymob.com/docs/transaction-callbacks)
 
-in the function handling the callback url you need to verify the transaction 
-example
+in the function handling the callback url you need to verify the transaction. 
+
+example code:
 ```php
 public function receive(Request $request) 
 {
@@ -80,7 +81,7 @@ If you discover any security related issues, please email maged.ahmedr@gmail.com
 
 ## Credits
 
-- [Maged Ahmed](https://github.com/magedahmad)
+- [Maged Ahmed](https://github.com/MagedAhmad)
 <!-- - [All Contributors](../../contributors) -->
 
 ## License
