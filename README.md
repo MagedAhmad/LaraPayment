@@ -6,7 +6,7 @@
 [![Made With](https://img.shields.io/badge/made_with-php-blue)](/docs/requirements/)
 
 
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what PSRs you support to avoid any confusion with users and contributors.
+A package to handle different payment gateways 
 
 ## Installation
 
