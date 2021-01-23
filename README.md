@@ -1,9 +1,10 @@
-# Very short description of the package
+# Payment integrations for Laravel projects
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/magedahmad/larapayment.svg?style=flat-square)](https://packagist.org/packages/magedahmad/larapayment)
-[![Build Status](https://img.shields.io/travis/magedahmad/larapayment/master.svg?style=flat-square)](https://travis-ci.org/magedahmad/larapayment)
-[![Quality Score](https://img.shields.io/scrutinizer/g/magedahmad/larapayment.svg?style=flat-square)](https://scrutinizer-ci.com/g/magedahmad/larapayment)
-[![Total Downloads](https://img.shields.io/packagist/dt/magedahmad/larapayment.svg?style=flat-square)](https://packagist.org/packages/magedahmad/larapayment)
+[![Total Downloads](https://img.shields.io/packagist/dt/magedahmad/larapayment.svg?style=flat-square)](https://packagist.org/packages/magedahmad/larapayment) [![Latest Version](https://img.shields.io/github/v/tag/MagedAhmad/LaraPayment?sort=semver&label=version)](https://github.com/MagedAhmad/LaraPayment/)
+[![Latest Version](https://img.shields.io/packagist/v/magedahmad/larapayment?label=version)](https://packagist.org/packages/magedahmad/larapayment/)
+[![Development Branch](https://img.shields.io/badge/development_branch-master-green.svg)](https://github.com/MagedAhmad/LaraPayment/tree/master/)
+[![Made With](https://img.shields.io/badge/made_with-php-blue)](/docs/requirements/)
+
 
 This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what PSRs you support to avoid any confusion with users and contributors.
 
@@ -14,13 +15,42 @@ You can install the package via composer:
 ```bash
 composer require magedahmad/larapayment
 ```
+under `providers` in `config/app/php` add this line
+```php
+MagedAhmad\LaraPayment\LaraPaymentServiceProvider::class,
+```
+in terminal publish the migration and config file with
+```bash
+php artisan vendor:publish
+```
+and migrate the db table 
+```bash
+php artisan migrate
+```
+in `app/config/larapament.php` you need to modify the API keys
 
 ## Usage
 
+`paymob` instructions
+
 ``` php
-// Usage description here
+use MagedAhmad\LaraPayment\LaraPayment;
+
+// payment gateway = paymob
+// amount to pay in usd = 100$
+$payment = new LaraPayment("paymob", 100);
+
+return $payment->make_payment();
 ```
 
+Response would return the `iframe` that you need to include in your blade file 
+
+after completing transaction you would be redirected to a route you specify in [paymob itself](https://docs.paymob.com/docs/transaction-callbacks)
+
+in the function handling the callback url you need to verify the transaction method can be found in `paymob.php`
+```
+
+```
 ### Testing
 
 ``` bash
@@ -42,12 +72,8 @@ If you discover any security related issues, please email maged.ahmedr@gmail.com
 ## Credits
 
 - [Maged Ahmed](https://github.com/magedahmad)
-- [All Contributors](../../contributors)
+<!-- - [All Contributors](../../contributors) -->
 
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
-## Laravel Package Boilerplate
-
-This package was generated using the [Laravel Package Boilerplate](https://laravelpackageboilerplate.com).

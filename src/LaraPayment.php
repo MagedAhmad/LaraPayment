@@ -3,10 +3,13 @@
 namespace MagedAhmad\LaraPayment;
 
 use GuzzleHttp\Client;
+use MagedAhmad\LaraPayment\Paymob;
 use MagedAhmad\LaraPayment\Models\Balance_summary;
 
 class LaraPayment
 {
+    use Paymob;
+
     public $request;
     public $method;
     public $amount;
@@ -26,20 +29,22 @@ class LaraPayment
      * @param [type] $token
      * @param [type] $currency
      */
-	public function __construct($method=null,$amount=null,$token=null,$currency=null)
+	public function __construct($token=null,$currency=null)
 	{ 
         $this->request = new Client();
-        $this->method=$method;
-        $this->amount=$this->clac_new_amount($method,$amount);
-        $this->usdtoegp = 15;
 
-        $this->amount_in_egp = sprintf('%0.2f', ceil( $this->amount*$this->usdtoegp ) ) ; 
         $this->currency=(null==$currency)?"USD":$currency; 
         
         $this->PAYMOB_API_KEY=env('PAYMOB_API_KEY');
 	}
 
-	public function make_payment(){ 
+	public function make_payment($method, $amount){ 
+        $this->method=$method;
+        $this->amount=$this->clac_new_amount($method,$amount);
+        $this->usdtoegp = 15;
+
+        $this->amount_in_egp = sprintf('%0.2f', ceil( $this->amount*$this->usdtoegp ) ) ; 
+
         if($this->method=="paymob"){ 
             return $this->paymob_payment(); 
         }  
@@ -227,5 +232,16 @@ class LaraPayment
         }else if($method=='tap'){
             return floatval( ($amount-env('TAP_FIXED_FEE'))/(1+env('TAP_PERCENTAGE_FEE')) );
         } 
+    }
+
+    /**
+     * Paymob verify transacation
+     *
+     * @param integer $paymentId
+     * @param array $response
+     * @return string status 
+     */
+    public function verify_paymob($paymentId, $response){
+        return $this->verify($paymentId, $response);
     }
 }
