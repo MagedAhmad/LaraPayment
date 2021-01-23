@@ -36,21 +36,30 @@ in `app/config/larapament.php` you need to modify the API keys
 ``` php
 use MagedAhmad\LaraPayment\LaraPayment;
 
+
+$payment = new LaraPayment();
+
 // payment gateway = paymob
 // amount to pay in usd = 100$
-$payment = new LaraPayment("paymob", 100);
-
-return $payment->make_payment();
+return $payment->make_payment("paymob", 100);
 ```
 
 Response would return the `iframe` that you need to include in your blade file 
 
 after completing transaction you would be redirected to a route you specify in [paymob itself](https://docs.paymob.com/docs/transaction-callbacks)
 
-in the function handling the callback url you need to verify the transaction method can be found in `paymob.php`
+in the function handling the callback url you need to verify the transaction 
+example
+```php
+public function receive(Request $request) 
+{
+    $laraPayment = new LaraPayment();
+
+    $laraPayment->verify_paymob($request->order, $request->all()); // return status
+}
 ```
 
-```
+And That's it !
 ### Testing
 
 ``` bash
