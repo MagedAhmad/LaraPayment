@@ -43,6 +43,10 @@ $payment = new LaraPayment();
 // amount to pay in usd = 100$
 $payment->make_payment("paymob", 100);
 ```
+default currency is `USD`, if you want you can change currency in constructor.
+```php
+$payment = new LaraPayment('EGP');
+```
 
 Response would return the `iframe` that you need to include in your blade file 
 

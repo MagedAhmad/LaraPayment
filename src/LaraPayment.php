@@ -30,7 +30,7 @@ class LaraPayment
 	{ 
         $this->request = new Client();
 
-        $this->currency=(null==$currency)?"USD":$currency; 
+        $this->currency=(null==$currency) ? "USD" : $currency; 
         
         $this->PAYMOB_API_KEY= config('larapayment.paymob_api_key');
     }
@@ -47,7 +47,7 @@ class LaraPayment
         $this->amount=$this->clac_new_amount($method,$amount);
         $this->usdtoegp = 15;
 
-        $this->amount_in_egp = sprintf('%0.2f', ceil( $this->amount*$this->usdtoegp ) ) ; 
+        $this->amount_in_egp = $this->currency == 'USD' ? sprintf('%0.2f', ceil( $this->amount*$this->usdtoegp ) ) : $this->currency ; 
 
         if($this->method=="paymob"){ 
             return $this->paymob_payment(); 
@@ -257,7 +257,7 @@ class LaraPayment
                     "identifier" => $phone, 
                     "subtype" => "WALLET"
                 ],
-                "payment_token" => $paymentToken  // token obtained in step 3
+                "payment_token" => $paymentToken  
             ]
         ]);
 
