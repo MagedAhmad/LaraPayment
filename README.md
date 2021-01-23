@@ -21,7 +21,7 @@ MagedAhmad\LaraPayment\LaraPaymentServiceProvider::class,
 ```
 in terminal publish the migration and config file with
 ```bash
-php artisan vendor:publish
+php artisan vendor:publish --provider="MagedAhmad\LaraPayment\LaraPaymentServiceProvider
 ```
 and migrate the db table 
 ```bash
