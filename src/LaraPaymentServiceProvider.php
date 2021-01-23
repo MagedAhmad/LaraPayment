@@ -16,13 +16,16 @@ class LaraPaymentServiceProvider extends ServiceProvider
          */
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'larapayment');
         // $this->loadViewsFrom(__DIR__.'/../resources/views', 'larapayment');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/config.php' => config_path('larapayment.php'),
             ], 'config');
+            $this->publishes([
+                __DIR__ . '/database/migrations/create_balance_summaries_table.php' => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_balance_summaries_table.php'),
+              ], 'migrations');
 
             // Publishing the views.
             /*$this->publishes([
