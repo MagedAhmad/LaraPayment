@@ -84,8 +84,9 @@ class LaraPayment
         
         return [
             'status'=>200,
+            'payment_token' => $paymentToken,
             'redirect'=>"https://accept.paymobsolutions.com/api/acceptance/iframes/".config("larapayment.paymob_iframe_id")."?payment_token=" . $paymentToken,
-        ]; ;
+        ]; 
     }  
 
     /**
@@ -239,5 +240,27 @@ class LaraPayment
      */
     public function verify_paymob($paymentId, $response){
         return $this->verify($paymentId, $response);
+    }
+
+    /**
+     * Pay with vodafone cash and kiosk
+     *
+     * @return void
+     */
+    public function pay($phone, $paymentToken) {
+        $response = $this->request->post("https://accept.paymobsolutions.com/api/acceptance/payments/pay", [
+            "headers" => [
+                'content-type' => 'application/json'
+            ],
+            "json" => [
+                "source" => [
+                    "identifier" => $phone, 
+                    "subtype" => "WALLET"
+                ],
+                "payment_token" => $paymentToken  // token obtained in step 3
+            ]
+        ]);
+
+        return json_decode($response->getBody()->getContents());
     }
 }
