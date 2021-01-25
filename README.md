@@ -41,7 +41,7 @@ $payment = new LaraPayment();
 
 // payment gateway = paymob
 // amount to pay in usd = 100$
-$payment->make_payment("paymob", 100);
+$payment->make_payment("paymob", 100, $items);
 ```
 default currency is `USD`, if you want you can change currency in constructor.
 ```php
