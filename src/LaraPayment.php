@@ -20,6 +20,7 @@ class LaraPayment
     public $PAYMOB_API_KEY;
     public $FAWRY_MERCHANT;
     public $FAWRY_SECRET;
+    public $items;
 
     /**
      * Initiate payment helper class
@@ -42,11 +43,11 @@ class LaraPayment
      * @param integer $amount
      * @return void
      */
-	public function make_payment($method, $amount){ 
+	public function make_payment($method, $amount, $items = null){ 
         $this->method=$method;
         $this->amount=$this->clac_new_amount($method,$amount);
         $this->usdtoegp = 15;
-
+        $this->items = $items;
         $this->amount_in_egp = $this->currency == 'USD' ? sprintf('%0.2f', ceil( $this->amount*$this->usdtoegp ) ) : $this->currency ; 
 
         if($this->method=="paymob"){ 
@@ -147,8 +148,7 @@ class LaraPayment
                 "auth_token"=> $token, 
                 "delivery_needed"=>"false",
                 "amount_cents"=>$this->amount_in_egp*100,
-                "items"=>[
-                ]
+                "items"=> $this->items ? $this->items : []
             ]
         ]);
 
