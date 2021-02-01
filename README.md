@@ -6,7 +6,10 @@
 [![Made With](https://img.shields.io/badge/made_with-php-blue)](/docs/requirements/)
 
 
-A package to handle different payment gateways 
+A package to handle different payment gateways.
+
+- Paymob [x] .
+- Paypal (check `paypal-branch`)[ ] .
 
 ## Installation
 
