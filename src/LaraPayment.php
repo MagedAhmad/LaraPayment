@@ -5,6 +5,18 @@ namespace MagedAhmad\LaraPayment;
 use GuzzleHttp\Client;
 use MagedAhmad\LaraPayment\Paymob;
 use MagedAhmad\LaraPayment\Models\Balance_summary;
+use \PayPal\Auth\OAuthTokenCredential;
+use \PayPal\Rest\ApiContext;
+use \PayPal\Api\Payer;
+use \PayPal\Api\Item;
+use \PayPal\Api\ItemList;
+use \PayPal\Api\Amount;
+use \PayPal\Api\Transaction;
+use \PayPal\Api\RedirectUrls;
+use \PayPal\Api\Payment;
+use \PayPal\Exception\PayPalConnectionException;
+use \PayPal\Api\Details;
+use \PayPal\Api\PaymentExecution;
 
 class LaraPayment
 {
@@ -52,7 +64,9 @@ class LaraPayment
 
         if($this->method=="paymob"){ 
             return $this->paymob_payment(); 
-        }  
+        }else if($this->method=="paypal"){ 
+            return $this->paypal_payment(); 
+        } 
     } 
 
     /**
@@ -90,7 +104,82 @@ class LaraPayment
         ]; 
     }  
 
-    /**
+    public function paypal_payment(){ 
+        $apiContext = new ApiContext(new OAuthTokenCredential(env('PAYPAL_CLIENT_ID'),env('PAYPAL_SECRET')));
+        $apiContext->setConfig(
+              array(
+                'log.LogEnabled' => true,
+                'log.FileName' => 'PayPal.log',
+                'log.LogLevel' => 'DEBUG',
+                'mode' => env('PAYPAL_MODE')
+              )
+        );
+        $payer = new Payer();
+        $payer->setPaymentMethod("paypal");  
+        $item = new Item();
+        $item->setName(env('PAYPAL_CREDIT_NAME'))
+             ->setCurrency($this->currency)
+             ->setQuantity(1)
+             ->setPrice($this->amount);
+        $itemList = new ItemList();
+        $itemList->setItems(array($item)); 
+        $details = new Details();
+        $details->setSubtotal($this->amount); 
+        $amount = new Amount();
+        $amount->setCurrency($this->currency)
+            ->setTotal($this->amount)
+            ->setDetails($details);
+        $transaction = new Transaction();
+        $transaction->setAmount($amount)
+            ->setItemList($itemList)
+            ->setDescription("Nafezly Credit")
+            ->setInvoiceNumber(uniqid());
+        $redirectUrls = new RedirectUrls();
+        $redirectUrls->setReturnUrl(route('payment.success'))
+            ->setCancelUrl(route('balance'));
+        $payment = new Payment();
+        $payment->setIntent("sale")
+            ->setPayer($payer)
+            ->setRedirectUrls($redirectUrls)
+            ->setTransactions(array($transaction));  
+        $counter=0; 
+    
+        out_tyr:   
+        try{  
+            $payment->create($apiContext); 
+            $approvalUrl = $payment->getApprovalLink();  
+            $res=[
+                'status'=>200, 
+                'redirect'=>$approvalUrl,
+                'message'=>'خطأ اثناء التنفيذ برجاء الرجوع للبنك الخاص بك او التأكد من سلامة البيانات المدخلة'
+            ]; 
+
+             
+                $store_payment=$this->store_payment(
+                    $payment_id=$payment->id,
+                    $amount=$this->calc_amout_after_transaction("paypal",$payment->transactions[0]->amount->total),
+                    $source="paypal",
+                    $process_data=$payment,
+                    $currency_code=strtoupper($payment->transactions[0]->amount->currency),
+                    $status=strtoupper("PENDING")
+                );  
+
+            return $res; 
+        }catch(\Exception $e)
+        { $counter+=1;if($counter<3)goto out_tyr;  }
+
+
+        $res=[
+            'status'=>200, 
+            'redirect'=>route('balance'),
+            'message'=>'خطأ اثناء التنفيذ برجاء المحاولة مرة أخرى لاحقاً'
+        ]; 
+
+        return $res; 
+     } 
+
+    
+     /**
      * Create payment token
      *
      * @param string $token
@@ -219,15 +308,33 @@ class LaraPayment
         }
     }
 
+    /**
+     * Calculate the new amount
+     *
+     * @param string $method
+     * @param float $amount
+     * @return float
+     */
     public function clac_new_amount($method,$amount){
         if($method=='paymob'){
             return floatval($amount+($amount*config('larapayment.paymob_percentage_fee'))+config('larapayment.paymob_fixed_fee'));
-        }
+        }else if($method=='paypal'){
+            return floatval($amount+($amount*env('PAYPAL_PERCENTAGE_FEE'))+env('PAYPAL_FIXED_FEE'));
+        } 
     }
     
+    /**
+     * Amount after transaction
+     *
+     * @param [type] $method
+     * @param [type] $amount
+     * @return void
+     */
     public static function calc_amout_after_transaction($method,$amount){
         if($method=='paymob'){
             return floatval( ($amount-config('larapayment.paymob_fixed_fee'))/(1+config('larapayment.paymob_percentage_fee')) );
+        }else if($method=='paypal'){
+            return floatval( ($amount-env('PAYPAL_FIXED_FEE'))/(1+env('PAYPAL_PERCENTAGE_FEE')) );
         }
     }
 
@@ -243,7 +350,7 @@ class LaraPayment
     }
 
     /**
-     * Pay with vodafone cash and kiosk
+     * Pay with vodafone cash and kiosk // paymob
      *
      * @return void
      */
