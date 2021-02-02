@@ -32,7 +32,7 @@ class LaraPayment
         $this->request = new Client();
 
         $this->currency=(null==$currency) ? "USD" : $currency; 
-        
+
         $this->PAYMOB_API_KEY= config('larapayment.paymob_api_key');
     }
     
@@ -48,7 +48,7 @@ class LaraPayment
         $this->amount=$this->clac_new_amount($method,$amount);
         $this->usdtoegp = 15;
         $this->items = $items;
-        $this->amount_in_egp = $this->currency == 'USD' ? sprintf('%0.2f', ceil( $this->amount*$this->usdtoegp ) ) : $this->currency ; 
+        $this->amount_in_egp = $this->currency == 'USD' ? sprintf('%0.2f', ceil( $this->amount*$this->usdtoegp ) ) : sprintf('%0.2f', ceil( $this->amount ) ) ; 
 
         if($this->method=="paymob"){ 
             return $this->paymob_payment(); 
@@ -75,7 +75,7 @@ class LaraPayment
             $amount=$this->calc_amout_after_transaction("paymob",$this->amount),
             $source="credit",
             $process_data= json_encode($order),
-            $currency_code="USD",
+            $currency_code=$this->currency,
             $status=strtoupper("PENDING"),
             $note=$this->amount_in_egp
         ); 
@@ -124,7 +124,7 @@ class LaraPayment
                     "last_name"=> (null==\Auth::user()->last_name)?\Auth::user()->name:\Auth::user()->last_name, 
                     "state"=> "NA" 
                 ],
-                "currency"=>"EGP",
+                "currency"=>$this->currency,
                 "integration_id"=> config('larapayment.paymob_mood') == "live" ? config('larapayment.paymob_live_integration_id') : config('larapayment.paymob_sandbox_integration_id') 
             ]
         ]);
@@ -147,7 +147,7 @@ class LaraPayment
             "json" => [
                 "auth_token"=> $token, 
                 "delivery_needed"=>"false",
-                "amount_cents"=>$this->amount_in_egp*100,
+                "amount_cents"=> $this->amount_in_egp*100,
                 "items"=> $this->items ? $this->items : []
             ]
         ]);
